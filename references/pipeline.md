@@ -24,16 +24,15 @@ ride.yaml
 
 ## 只改 build 层配置的捷径
 
-BGM/文案/转场/结尾图时长等**只影响草稿组装**的配置变更，无需重跑视频处理链（cut/hud/composite 对同一 selection 产物是幂等重算，重跑纯耗时）。三步：
+BGM/文案/转场/结尾图时长等**只影响草稿组装**的配置变更，无需重跑视频处理链（cut/hud/composite 对同一 selection 产物是幂等重算，重跑纯耗时）。改完 ride.yaml 直接：
 
 ```bash
-# ① 改 ride.yaml（如 bgm.cloud_id）→ ② 重生成 resolved
-<skill>/.venv/bin/python -c "import sys; sys.path.insert(0,'<skill>/scripts'); from common import load_config, save_resolved; save_resolved(load_config('<work>/ride.yaml'))"
-# ③ 直接单跑 build（jianying venv；verify 可选）
-<JY_ROOT>/.venv/bin/python <skill>/scripts/build_draft.py --resolved <work>/config.resolved.json
+# 单跑 build（先自动从 ride.yaml 重生成 resolved，再只执行 build；需验收再加 verify）
+<skill>/.venv/bin/python <skill>/scripts/run_pipeline.py --config <work>/ride.yaml --only build
+<skill>/.venv/bin/python <skill>/scripts/run_pipeline.py --config <work>/ride.yaml --only verify
 ```
 
-注意：换 BGM 走 `bgm.source: cache` 时需先把歌曲下载到 `~/cloud_cache/<id>_*.m4a`（用 jianying-editor 的 `cloud_manager.py <id>`）。
+`--only <阶段[,阶段]>` 不执行前置阶段；build/verify 照常自动切 jianying-editor venv。注意：换 BGM 走 `bgm.source: cache` 时需先把歌曲下载到 `~/cloud_cache/<id>_*.m4a`（用 jianying-editor 的 `cloud_manager.py <id>`）。
 
 ## media_inventory.json schema
 

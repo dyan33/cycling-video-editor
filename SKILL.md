@@ -37,10 +37,9 @@ description: 骑行/运动视频自动剪辑流水线：FIT 码表数据 + 运�
 | verify | verify_geometry.py | geometry_check.png + 像素差判定 |
 
 单阶段重跑：`--to <阶段>` 会按序执行其前置；改了配置重跑 probe 起的全部阶段。
-**只改 build 层配置的捷径**（BGM/文案/转场/结尾图时长，不动视频内容）：改 ride.yaml → 重生成 resolved → 直接单跑 build（跳过 cut/hud/composite 重处理）：
+**只改 build 层配置的捷径**（BGM/文案/转场/结尾图时长，不动视频内容）：改 ride.yaml 后用 `--only` 单跑（自动重生成 resolved、跳过 cut/hud/composite 重处理）：
 ```bash
-<skill>/.venv/bin/python -c "import sys; sys.path.insert(0,'<skill>/scripts'); from common import load_config, save_resolved; save_resolved(load_config('<work>/ride.yaml'))"
-<JY_ROOT>/.venv/bin/python <skill>/scripts/build_draft.py --resolved <work>/config.resolved.json
+<skill>/.venv/bin/python <skill>/scripts/run_pipeline.py --config <work>/ride.yaml --only build
 ```
 
 ## 硬性规则

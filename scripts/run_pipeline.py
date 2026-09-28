@@ -1,12 +1,15 @@
-"""流水线驱动：按序执行阶段，支持 --to 断点与选段人工停点。
+"""流水线驱动：按序执行阶段，支持 --to 断点、--only 单跑指定阶段与选段人工停点。
 
 用法（自带 venv）：
   .venv/bin/python run_pipeline.py --config ride.yaml --to preview   # 跑到选段停点
   # 人工确认后写 selection.json
   .venv/bin/python run_pipeline.py --config ride.yaml --to verify    # 跑完剩余全部
+  # 只改了 build 层配置（BGM/文案/转场/结尾图时长）时单跑，跳过 cut/hud/composite 重处理：
+  .venv/bin/python run_pipeline.py --config ride.yaml --only build
 
 阶段：probe → fit → preview(停点) → cut → hud → composite → build → verify
 build/verify 自动切换到 jianying-editor 的 venv 执行（pyJianYingDraft 所在环境）。
+--only 会先从 ride.yaml 重新生成 resolved（配置改动随之生效），再只执行所列阶段。
 """
 
 import argparse
@@ -49,17 +52,27 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True, help="ride.yaml 路径")
     ap.add_argument("--to", default="verify", help=f"跑到哪个阶段: {' → '.join(ORDER)}")
+    ap.add_argument("--only", default=None,
+                    help="只跑指定阶段（逗号分隔，如 build 或 build,verify），不执行前置；"
+                         "适合只改 build 层配置（BGM/文案/转场/结尾图时长）快速重建")
     args = ap.parse_args()
 
     cfg = load_config(args.config)
     cfg["__config_path"] = os.path.abspath(args.config)
     save_resolved(cfg)
 
-    target = args.to
-    if target not in ORDER:
-        raise SystemExit(f"未知阶段 {target}，可选: {ORDER}")
+    if args.only:
+        stages = [s.strip() for s in args.only.split(",") if s.strip()]
+        bad = [s for s in stages if s not in ORDER]
+        if bad or not stages:
+            raise SystemExit(f"未知阶段 {bad or '(空)'}，可选: {ORDER}")
+    else:
+        target = args.to
+        if target not in ORDER:
+            raise SystemExit(f"未知阶段 {target}，可选: {ORDER}")
+        stages = ORDER[: ORDER.index(target) + 1]
 
-    for stage in ORDER[: ORDER.index(target) + 1]:
+    for stage in stages:
         if stage == "preview":
             sel = work_path(cfg, "selection.json")
             if os.path.exists(sel):

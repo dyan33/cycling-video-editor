@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0 (2026-09-28)
+- feat: run_pipeline 新增 `--only <阶段[,阶段]>`——只执行所列阶段不跑前置（先从 ride.yaml 重生成 resolved），把「只改 build 层配置（BGM/文案/转场/结尾图时长）快速重建」从文档手工命令升级为原生入口；非法阶段名执行前拦截
+- docs: SKILL.md/pipeline.md 的 build-only 捷径改为 `--only build` 单命令
+- 验证：真实配置 `--only verify` 通过（几何 1.85%），非法阶段名正确拦截
+
 ## 1.2.0 (2026-09-28)
 - feat: 候选内置坡度——window_stats 输出 grade_pct（滑窗中点对 grade_series 插值），候选打印行与 fit_windows.json 均含坡度字段
 - feat: selection.intensity.grade_weight（默认 0 不改旧行为）：score=(1-gw)×强度分 + gw×min(1, 正坡度/时段P95)；坡度基准取素材时段正坡度 P95，抗停车/推车假坡度尖峰
