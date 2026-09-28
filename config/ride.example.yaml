@@ -1,0 +1,61 @@
+# cycling-video-editor 单次骑行剪辑配置
+# 复制本文件到工作目录为 ride.yaml 后按需修改；所有路径必须是绝对路径。
+# 各字段含义见 references/pipeline.md
+
+ride_name: puhonglu_20260926        # 草稿名与工作目录名的基础
+
+# ---- 输入 ----
+footage_dir: /Volumes/1TB/骑行素材/蒲虹路_20260926   # 素材目录（递归取 mp4/mov/m4v）
+fit_file: /path/to/ride.fit                          # FIT 码表文件
+ending_image: null                  # 可选：结尾展示图（完整原图，等比适配不裁剪）
+time_offset_seconds: 0              # 视频时钟校准：加到视频时间上使其对齐码表时钟
+
+# ---- 素材筛选 ----
+max_clip_mb: 300                    # 只考虑小于该体积的素材
+time_source: auto                   # auto|filename|mtime  视频开始时间来源
+
+# ---- 选段 ----
+selection:
+  strategy: high_intensity          # high_intensity=FIT 功率+心率评分 | uniform=按时间均匀覆盖
+  count: 6                          # 精选片段数
+  clip_seconds: 4                   # 单段时长
+  edge_skip_seconds: 2.0            # 跳过素材首尾
+  window_step_seconds: 2.0          # high_intensity 滑窗步长
+  intensity:
+    power_weight: 0.6               # 评分 = pw*归一化功率 + (1-pw)*归一化心率
+  fps: 15                           # HUD 逐帧渲染帧率
+
+# ---- HUD 表盘样式 ----
+style:
+  enabled: true
+  preset: mimo                      # 目前仅内置 mimo（速度半圆盘 + 功率/心率圆环）
+  position: left_top                # left_top|left_bottom|right_top|right_bottom
+  scale: 1.0                        # 整体缩放
+  fields: [speed, power, hr]        # 可用字段（扩展需 render_hud 支持）: speed/power/hr
+  decimals: {speed: 1, power: 0, hr: 1}
+  theme:                            # RGB 0-255
+    speed: [255, 122, 0]
+    power: [0, 200, 255]
+    hr: [255, 59, 72]
+  ranges: {speed: 60, power: 400, hr: 190}   # 表盘量程（弧线比例基准）
+
+# ---- 文案（null = 自动生成）----
+texts:
+  title: null                       # 自动: "骑行 · YYYY.MM.DD"（取 FIT 首条记录日期）
+  summary: auto                     # auto: "均速Xkm/h · 爬升Xm · 均功率XW"；填字符串则原样用
+  ending: auto                      # auto: "完骑 Xkm · 爬升 Xm"（需 FIT 距离字段，否则退化为爬升）
+
+# ---- BGM ----
+bgm:
+  source: cache                     # cache=按 cloud_id 找本地缓存 | cloud_id=云端下载 | local | none
+  cloud_id: "7376227059830605861"   # 极限运动 Sport Power
+  local_path: null
+  volume: 0.7
+
+# ---- 草稿 ----
+draft:
+  name: auto                        # auto = ride_name
+  transition: 叠化
+  transition_duration: 0.5
+  ending_seconds: 6                 # 结尾图时长
+  title_seconds: 3
