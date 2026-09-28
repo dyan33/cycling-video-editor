@@ -18,9 +18,27 @@ MAD_THRESHOLD = 2.0  # %
 
 
 def hud_mask(shape, style):
-    """按 HUD 布局生成排除掩码（表盘外接区域，宽裕 20%）。"""
-    from render_hud import layout
+    """按真实渲染的 HUD alpha 通道生成排除掩码（内容级事实，适配所有 preset）。
+
+    用最宽数值渲染一帧，文本外扩必然被覆盖；渲染失败回退 mimo 布局外接框。
+    （坑10：旧版只按 mimo 表盘布局取外接框，gauges_gradebar 的坡度条/徽章
+    延伸到 0.70H，超出掩码底 0.57H，被计入像素差导致几何校验误报 FAIL。）
+    """
     H, W = shape[:2]
+    try:
+        from render_hud import render_frame
+        # 最宽数值：位数最多时文本最宽（-15.0% / 999.9 / 9999）
+        values = {"speed": 60.0, "power": 400.0, "hr": 190.0,
+                  "distance_km": 999.9, "altitude_m": 9999.0, "grade_pct": -15.0}
+        ctx = {"altitude_series": [(0, 0.0), (1, 100.0)], "ride_span": (0, 1), "now_epoch": 0.5}
+        hud = render_frame(W, H, style, values, ctx)
+        alpha = np.array(hud.split()[-1])
+        covered = (alpha > 0).astype(np.uint8)
+        covered = cv2.dilate(covered, np.ones((61, 61), np.uint8))  # 外扩 ~30px
+        return covered == 0
+    except Exception as e:  # noqa: BLE001 渲染失败不应阻断几何校验
+        print(f"⚠️ HUD alpha 掩码生成失败（{e}），回退 mimo 布局外接框")
+    from render_hud import layout
     lay = layout(W, H, style.get("position", "left_top"), float(style.get("scale", 1.0)))
     mask = np.ones((H, W), bool)
     x0 = min(v[0] for v in lay.values())
@@ -28,7 +46,7 @@ def hud_mask(shape, style):
     y0 = min(v[1] for v in lay.values())
     y1 = max(v[1] for v in lay.values())
     r = max(v[2] for v in lay.values())
-    # 速度盘在上方、圆环在下方：外接框取 y0-盘径 到 y1+环径，x0-盘径 到 x1+环径
+    # 速度盘在上方、圆环在下方：外接框取 y0-盘径 到 y1+环径，x0-盘径 到 x1+盘径
     pad_x = r * 2.5
     mask[max(0, int(y0 - r * 2.5)):int(y1 + r * 2.2), max(0, int(x0 - pad_x)):int(x1 + pad_x)] = False
     return mask

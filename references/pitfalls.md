@@ -66,3 +66,11 @@ ffprobe -v error -select_streams v:0 -show_entries stream_side_data_list -of jso
 **现象**：混合片段时长（精华 3s + 高强度 4s）时后续片段时间错位、互相重叠。
 **解法**：时间线起点按 selection 顺序**累加时长**（build_draft 已内置），selection.json 是时间线唯一事实源。
 **教训**：新增可配字段后，所有派生量（时间线/BGM 时长/文案位置）都要改为从数据推导，不留"等长假设"。
+
+## 坑 10：verify_geometry 掩码按 mimo 布局硬编码，扩展 preset 误报几何不一致 ★★★（1.1.1 发现）
+
+**现象**：gauges_gradebar 样式出片后 verify 报 2.75%（阈值 2%）FAIL，但抽帧目检与网格化差值均无拉伸迹象。
+**原因**：`hud_mask` 只按 `render_hud.layout`（mimo 速度盘/圆环）取外接框，底边只到 y≈0.57H；gauges_gradebar 的坡度摆针条与海拔/距离徽章延伸到 y≈0.70H，掩码外的 HUD 像素被计入"内容差"。
+**检测**：对参考帧 vs 成片帧做 8x8 网格化 MAD——差异集中区（9~21%）包围盒 x[0.04,0.44]W、y[0.16,0.71]H 与 HUD 元素重合即为掩码缺口；其余区域均匀 1~2% 属编码噪声。
+**解法**：`hud_mask` 改为用**最宽数值**（-15.0% / 999.9 / 9999 等）真实渲染一帧当前 preset 的 HUD，按 alpha>0 外扩 30px 生成掩码（内容级事实，天然适配全部 preset）；渲染异常回退原 mimo 外接框（verify_geometry 已内置）。
+**教训**：几何校验的"排除区"必须与实际叠加物同源（渲染出来的内容），不能按某个 preset 的布局公式硬编码；新增/修改 HUD 样式后必须回归 verify。

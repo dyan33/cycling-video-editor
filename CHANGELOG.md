@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1 (2026-09-28)
+- fix: verify_geometry 的 HUD 排除掩码改为按当前 preset 真实渲染一帧（最宽数值）取 alpha 外扩 30px 生成，渲染失败回退原 mimo 外接框；修复 gauges_gradebar 等扩展样式的坡度条/徽章超出 mimo 外接框导致的几何误报（蒲虹路 50s 真实任务 2.75% → 1.85% 通过）。已回写坑10。
+
 ## 1.1.0 (2026-09-28)
 - 新增 4 组数据样式 preset（hud_styles.py）：panel 数据面板 / gauges_gradebar 表盘坡度条 / climb_hero 坡度主角（坡道示意+海拔剖面）/ telemetry_strip 顶部数据带
 - 新增数据字段：距离、海拔、坡度（±5s 滑窗海拔差/距离差，带符号颜色分级）
