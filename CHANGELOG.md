@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 (2026-09-28)
+- feat: 候选内置坡度——window_stats 输出 grade_pct（滑窗中点对 grade_series 插值），候选打印行与 fit_windows.json 均含坡度字段
+- feat: selection.intensity.grade_weight（默认 0 不改旧行为）：score=(1-gw)×强度分 + gw×min(1, 正坡度/时段P95)；坡度基准取素材时段正坡度 P95，抗停车/推车假坡度尖峰
+- feat: 预览候选在分数 top 之外自动补充坡度 top 5（去重叠），保证高坡度窗口进入拼图供人工挑选
+- fix: max_clip_mb 过滤后候选为空时显式报错并提示调大（坑11，不再静默空列表）；素材时段无功率/心率窗口同样显式报错
+- docs: 回写坑11/坑12；SKILL.md/pipeline.md 补「只改 build 层配置的捷径」（重生成 resolved + 单跑 build_draft，跳过 cut/hud/composite）
+- 真实任务回归：默认配置 top22 与 1.1.1 完全一致；坡度补充候选命中两个真实坡度巅峰（0029@2266 G+9.3 / 0030@188 G+9.1）与两个待目检淘汰的假坡度窗口，符合坑12工作流
+
 ## 1.1.1 (2026-09-28)
 - fix: verify_geometry 的 HUD 排除掩码改为按当前 preset 真实渲染一帧（最宽数值）取 alpha 外扩 30px 生成，渲染失败回退原 mimo 外接框；修复 gauges_gradebar 等扩展样式的坡度条/徽章超出 mimo 外接框导致的几何误报（蒲虹路 50s 真实任务 2.75% → 1.85% 通过）。已回写坑10。
 

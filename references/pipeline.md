@@ -22,6 +22,19 @@ ride.yaml
 
 缺省 `~/Movies/ride-projects/<ride_name>/`（可在 ride.yaml `work_dir` 覆盖）。所有中间产物都在这里，删除工作目录不影响剪映草稿（草稿自包含素材副本）。
 
+## 只改 build 层配置的捷径
+
+BGM/文案/转场/结尾图时长等**只影响草稿组装**的配置变更，无需重跑视频处理链（cut/hud/composite 对同一 selection 产物是幂等重算，重跑纯耗时）。三步：
+
+```bash
+# ① 改 ride.yaml（如 bgm.cloud_id）→ ② 重生成 resolved
+<skill>/.venv/bin/python -c "import sys; sys.path.insert(0,'<skill>/scripts'); from common import load_config, save_resolved; save_resolved(load_config('<work>/ride.yaml'))"
+# ③ 直接单跑 build（jianying venv；verify 可选）
+<JY_ROOT>/.venv/bin/python <skill>/scripts/build_draft.py --resolved <work>/config.resolved.json
+```
+
+注意：换 BGM 走 `bgm.source: cache` 时需先把歌曲下载到 `~/cloud_cache/<id>_*.m4a`（用 jianying-editor 的 `cloud_manager.py <id>`）。
+
 ## media_inventory.json schema
 
 ```json
@@ -59,9 +72,11 @@ ride.yaml
 ```json
 {
   "summary": {"duration_h": 11.85, "avg_speed_kmh": 26.4, "avg_power_w": 119, "avg_hr_bpm": 145, "climb_m": 1347, "distance_km": null, "start_date": "2026-09-26"},
-  "candidates": [{"file": "...", "source_start": 84.0, "score": 0.863, "power": 368.0, "hr": 178.0, "speed_kmh": 17.3, "abs_iso": "...", "has_data": true}]
+  "candidates": [{"file": "...", "source_start": 84.0, "score": 0.863, "power": 368.0, "hr": 178.0, "speed_kmh": 17.3, "grade_pct": 7.6, "abs_iso": "...", "has_data": true}]
 }
 ```
+
+评分：`score = (1-grade_weight) × (power_weight×归一化功率 + (1-power_weight)×归一化心率) + grade_weight × 归一化正坡度`；`grade_weight` 默认 0（纯强度分），要突出爬坡时设 0.3~0.5。坡度 top 窗口可能是停车/推车假坡度（V≈0/P≈0），选段时须目检剔除（坑12）。
 
 ## HUD 布局
 

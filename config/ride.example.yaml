@@ -11,7 +11,7 @@ ending_image: null                  # 可选：结尾展示图（完整原图，
 time_offset_seconds: 0              # 视频时钟校准：加到视频时间上使其对齐码表时钟
 
 # ---- 素材筛选 ----
-max_clip_mb: 300                    # 只考虑小于该体积的素材
+max_clip_mb: 300                    # 只考虑小于该体积的素材；整段长录大文件（DJI 4K 单文件可达数十 GB）务必调大到超过最大素材（坑11）
 time_source: auto                   # auto|filename|mtime  视频开始时间来源
 
 # ---- 选段 ----
@@ -23,6 +23,7 @@ selection:
   window_step_seconds: 2.0          # high_intensity 滑窗步长
   intensity:
     power_weight: 0.6               # 评分 = pw*归一化功率 + (1-pw)*归一化心率
+    grade_weight: 0.0               # 0~1 坡度权重：score=(1-gw)*强度分 + gw*归一化正坡度；要高坡度高光时设 0.3~0.5（坑12：坡度 top 需目检剔除推车假坡度）
   fps: 15                           # HUD 逐帧渲染帧率
 
 # ---- HUD 表盘样式 ----
