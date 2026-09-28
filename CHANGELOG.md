@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 (2026-09-28)
+- 新增 4 组数据样式 preset（hud_styles.py）：panel 数据面板 / gauges_gradebar 表盘坡度条 / climb_hero 坡度主角（坡道示意+海拔剖面）/ telemetry_strip 顶部数据带
+- 新增数据字段：距离、海拔、坡度（±5s 滑窗海拔差/距离差，带符号颜色分级）
+- style.preset 配置项选择样式；render_frame 按 preset 分发；数值+单位按实测宽度组合定位防重叠，超宽自动缩字号
+- 经 4 组变体草稿真实出片验证（用户逐样式目检并反馈 3 轮排版问题，已全部修复）
+
 ## 1.0.0 (2026-09-28)
 - 首个可用版本：8 阶段流水线（probe → fit → preview⏸人工选段 → cut → hud → composite → build → verify）
 - 用蒲虹路素材真实测试通过：竖屏 1440x1920、11 段混合时长、动态 HUD 小数表盘、结尾完整长图、几何终验 0.86%

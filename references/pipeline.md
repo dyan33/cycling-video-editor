@@ -65,9 +65,21 @@ ride.yaml
 
 ## HUD 布局
 
+**preset 一览**（ride.yaml `style.preset`）：
+
+| preset | 内容 | 数据字段 |
+|---|---|---|
+| `mimo`（默认） | 速度半圆盘 + 功率/心率圆环，支持 fields/decimals/theme/position/scale | speed/power/hr |
+| `panel` | 数据面板 6 行（色点+标签+数值） | 全部 6 字段 |
+| `gauges_gradebar` | Mimo 表盘（环加大）+ 坡度摆针条（±15%）+ 海拔/距离徽章 | 全部 6 字段 |
+| `climb_hero` | 大号坡度（颜色分级）+ 坡道斜面示意 + 海拔剖面迷你图 + 数据竖列 | 全部 6 字段 |
+| `telemetry_strip` | 顶部横排 6 格数据带（超宽自动缩字号） | 全部 6 字段 |
+
+坡度：`grade_series` 由 ±5s 滑窗海拔差/距离差计算（fit_extract），带符号（+上坡/−下坡），颜色分级 <3 白、3-6 黄、6-9 橙、≥9 红、下坡蓝。
+
 - 速度半圆盘：圆心 `(0.167W, 0.24H)`，半径 `0.090W × scale`；功率/心率圆环：`(0.115W, 0.417H)`、`(0.208W, 0.417H)`，半径 `0.044W × scale`
-- position 四角预设：left_top 为基准，right 镜像 x，bottom 镜像 y
-- 数值格式：decimals 配置；字号随文本长度自动收缩防溢出
+- position 四角预设：left_top 为基准，right 镜像 x，bottom 镜像 y（mimo 有效）
+- 数值格式：decimals 配置；字号随文本长度自动收缩防溢出；数值+单位按实测宽度组合定位防重叠
 - 逐帧插值：帧时刻 t 在 FIT 相邻记录间线性插值（速度 m/s→km/h）；记录间隔大时镜头内数值缓变是数据粒度所致，非 bug
 
 ## 草稿组装（阶段⑦）

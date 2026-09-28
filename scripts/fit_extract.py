@@ -18,6 +18,27 @@ from common import TZ, load_config, load_json, save_json, work_path
 FIELDS = ("speed", "power", "heart_rate", "distance", "altitude")
 
 
+def grade_series(records, half_window_s=5.0):
+    """坡度序列：±half_window_s 滑窗内海拔差/距离差（抗单点噪声）。
+
+    返回 [(epoch_sec, grade_pct)]，供 HUD 逐帧插值。
+    """
+    pts = [(r["t"].timestamp(), r["distance"], r["altitude"])
+           for r in records if "distance" in r and "altitude" in r]
+    series = []
+    for i, (t, d, a) in enumerate(pts):
+        j = i
+        while j > 0 and t - pts[j][0] < half_window_s:
+            j -= 1
+        k = i
+        while k < len(pts) - 1 and pts[k][0] - t < half_window_s:
+            k += 1
+        dd = pts[k][1] - pts[j][1]
+        da = pts[k][2] - pts[j][2]
+        series.append((t, da / dd * 100 if dd > 2 else 0.0))
+    return series
+
+
 def parse_records(fit_path):
     records = []
     with fitdecode.FitReader(fit_path) as fit:

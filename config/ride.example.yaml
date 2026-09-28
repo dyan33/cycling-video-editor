@@ -28,12 +28,16 @@ selection:
 # ---- HUD 表盘样式 ----
 style:
   enabled: true
-  preset: mimo                      # 目前仅内置 mimo（速度半圆盘 + 功率/心率圆环）
-  position: left_top                # left_top|left_bottom|right_top|right_bottom
+  preset: mimo                      # mimo=速度盘+功率/心率环（支持 fields/decimals/theme/position）
+                                    # panel=数据面板6行（+坡度/海拔/距离，全字段）
+                                    # gauges_gradebar=Mimo表盘+坡度摆针条+海拔/距离徽章
+                                    # climb_hero=坡度主角（大号坡度+坡道示意+海拔剖面）
+                                    # telemetry_strip=顶部极简数据带6格
+  position: left_top                # left_top|left_bottom|right_top|right_bottom（mimo 有效）
   scale: 1.0                        # 整体缩放
-  fields: [speed, power, hr]        # 可用字段（扩展需 render_hud 支持）: speed/power/hr
+  fields: [speed, power, hr]        # 仅 mimo 有效；其余 preset 固定全字段
   decimals: {speed: 1, power: 0, hr: 1}
-  theme:                            # RGB 0-255
+  theme:                            # RGB 0-255（mimo/部分 preset）
     speed: [255, 122, 0]
     power: [0, 200, 255]
     hr: [255, 59, 72]

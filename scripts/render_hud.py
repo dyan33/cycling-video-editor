@@ -101,8 +101,26 @@ def ring_gauge(draw, center, radius, value, vmax, color, label, unit, decimals=0
     _text_center(draw, (cx, cy + radius * 0.98), label, f_lab, C_WHITE)
 
 
-def render_frame(W, H, style, values):
-    """values: {"speed": kmh, "power": W, "hr": bpm} → RGBA HUD 层。"""
+def render_frame(W, H, style, values, ctx=None):
+    """按 style.preset 渲染 HUD 层 → RGBA。
+
+    preset:
+      mimo              速度半圆盘 + 功率/心率圆环（speed/power/hr）
+      panel             数据面板：6 行（+坡度/海拔/距离）
+      gauges_gradebar   表盘 + 坡度摆针条 + 海拔/距离徽章
+      climb_hero        坡度主角：大号坡度 + 坡道示意 + 海拔剖面（需 ctx）
+      telemetry_strip   顶部极简数据带 6 格
+    values 按 preset 提供字段：speed/power/hr/distance_km/altitude_m/grade_pct。
+    ctx（climb_hero 用）: {"altitude_series": [(epoch,m)], "ride_span": (t0,t1), "now_epoch": t}
+    """
+    preset = style.get("preset", "mimo")
+    if preset != "mimo":
+        from hud_styles import STYLES as _EXT_STYLES
+        renderer = _EXT_STYLES.get(preset)
+        if renderer is None:
+            raise SystemExit(f"未知 HUD preset: {preset}（可选 mimo/{'/'.join(_EXT_STYLES)}）")
+        return renderer(W, H, values, ctx or {})
+
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     lay = layout(W, H, style.get("position", "left_top"), float(style.get("scale", 1.0)))
